@@ -44,6 +44,7 @@ public class ClientHandlerImpl extends Thread implements ClientHandler {
                 throw new RuntimeException(e);
             }
             out.println(inputLine);
+            log.info(inputLine);
         }
 
         try {
