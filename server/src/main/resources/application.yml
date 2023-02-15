@@ -1,0 +1,18 @@
+socket:
+  server:
+    port: 24027
+
+microservicedb:
+  configuration:
+    url: 'jdbc:oracle:thin:@wmperf-scan.wsgc.com:1521/wmsmcsperf'
+    username: WMSMCSPERF
+    driver: oracle.jdbc.OracleDriver
+    password: 'Wsi#1234'
+    schema: WMSMCSPERF
+    minimumIdle: 1
+    maximumPoolSize: 2
+    idleTimeout: 10000
+    maxLifetime: 20000
+    connectionTimeout: 20000
+    poolName: socket-server-mcs-pool
+    connectionInitSql: SELECT 1 FROM DUAL
