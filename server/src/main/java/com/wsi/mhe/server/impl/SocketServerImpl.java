@@ -27,11 +27,11 @@ public class SocketServerImpl implements SocketServer, CommandLineRunner {
     @Override
     public void init() throws IOException {
         serverSocket = new ServerSocket(serverPort);
-        while (true) {
+        //while (true) {
             clientSocket = serverSocket.accept();
             log.info("Client request received...processing request!");
             new ClientHandlerServiceImpl(clientSocket).start();
-        }
+        //}
     }
 
     @Override

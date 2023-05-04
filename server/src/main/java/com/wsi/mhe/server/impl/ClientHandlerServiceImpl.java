@@ -1,6 +1,7 @@
 package com.wsi.mhe.server.impl;
 
 import com.wsi.mhe.server.api.ClientHandlerService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -32,6 +33,7 @@ public class ClientHandlerServiceImpl extends Thread implements ClientHandlerSer
     public void setClientSocket(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
+    @SneakyThrows
     @Override
     public void run() {
         try {
@@ -50,7 +52,6 @@ public class ClientHandlerServiceImpl extends Thread implements ClientHandlerSer
 
         while (true) {
             try {
-
                 if (in.available()>0) {
                     log.info("Strating to process request for {} at {}", clientSocket.getInetAddress()+":"+clientSocket.getPort(), Instant.now().truncatedTo(ChronoUnit.SECONDS));
                     StringBuilder stringBuffer = null;
@@ -68,6 +69,7 @@ public class ClientHandlerServiceImpl extends Thread implements ClientHandlerSer
                         input = stringBuffer.toString();
 
                         log.info("Message Received from client {}:{} is: {}", clientSocket.getInetAddress(), clientSocket.getPort(), input);
+                        log.info("Received data: {}", input);
                         log.info("Sending ACK...");
 
                         if (first)
@@ -76,9 +78,15 @@ public class ClientHandlerServiceImpl extends Thread implements ClientHandlerSer
                             start = Instant.now().truncatedTo(ChronoUnit.SECONDS);
                         }
                         bw.write(0x02);
-                        String ackMsg = "ACK";
+                        String ackMsg = null;
                         if (!StringUtils.isEmpty(input))
-                            ackMsg = input.substring(0, 5) + "ACK";
+                        {
+                            if (input.contains("KEEPALIVE"))
+                                ackMsg = input.substring(0, 9) + "KEEPALIVEACK";
+                                //ackMsg = "KEEPALIVEACK";
+                            else
+                                ackMsg = input.substring(0, 9) + "REGACK";
+                        }
                         bw.write(ackMsg);
                         bw.write(0x03);
                         bw.flush();
@@ -89,11 +97,13 @@ public class ClientHandlerServiceImpl extends Thread implements ClientHandlerSer
                         throw new RuntimeException(e);
                     }
                 }
-                else if (start.plusSeconds(180).compareTo(recent) < 0 ) {
-                    clientSocket.close();
-                    log.info("Process complete for {} at {}", clientSocket.getInetAddress()+":"+clientSocket.getPort(), Instant.now().truncatedTo(ChronoUnit.SECONDS));
-                    break;
-                }
+                else
+                    sleep(250);
+//                else if (start.plusSeconds(180).compareTo(recent) < 0 ) {
+//                    clientSocket.close();
+//                    log.info("Process complete for {} at {}", clientSocket.getInetAddress()+":"+clientSocket.getPort(), Instant.now().truncatedTo(ChronoUnit.SECONDS));
+//                    break;
+//                }
             }
             catch (IOException e) {
                 throw new RuntimeException(e);

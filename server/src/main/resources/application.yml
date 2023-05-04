@@ -1,6 +1,6 @@
 socket:
   server:
-    port: 24027
+    port: 24022
 
 microservicedb:
   configuration:
